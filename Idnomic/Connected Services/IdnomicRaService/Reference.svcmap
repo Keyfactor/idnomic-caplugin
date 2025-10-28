@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ReferenceGroup xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ID="cb496c44-246e-4557-a9be-aca15d6cca33" xmlns="urn:schemas-microsoft-com:xml-wcfservicemap">
+  <ClientOptions>
+    <GenerateAsynchronousMethods>false</GenerateAsynchronousMethods>
+    <GenerateTaskBasedAsynchronousMethod>true</GenerateTaskBasedAsynchronousMethod>
+    <EnableDataBinding>true</EnableDataBinding>
+    <ExcludedTypes />
+    <ImportXmlTypes>false</ImportXmlTypes>
+    <GenerateInternalTypes>false</GenerateInternalTypes>
+    <GenerateMessageContracts>false</GenerateMessageContracts>
+    <NamespaceMappings />
+    <CollectionMappings />
+    <GenerateSerializableTypes>true</GenerateSerializableTypes>
+    <Serializer>Auto</Serializer>
+    <UseSerializerForFaults>true</UseSerializerForFaults>
+    <ReferenceAllAssemblies>true</ReferenceAllAssemblies>
+    <ReferencedAssemblies />
+    <ReferencedDataContractTypes />
+    <ServiceContractMappings />
+  </ClientOptions>
+  <MetadataSources>
+    <MetadataSource Address="C:\Users\bhill\OneDrive - Keyfactor\Documents\OpenTrust\PKI_SOAP_Developer_Guide-4.9.0\otpkiraconnector-2.3.wsdl" Protocol="file" SourceId="1" />
+  </MetadataSources>
+  <Metadata>
+    <MetadataFile FileName="otpkiraconnector-2.wsdl" MetadataType="Wsdl" ID="6052c1fc-915d-4be4-b8d8-850f5c01bb8b" SourceId="1" SourceUrl="file:///C:/Users/bhill/OneDrive - Keyfactor/Documents/OpenTrust/PKI_SOAP_Developer_Guide-4.9.0/otpkiraconnector-2.3.wsdl" />
+    <MetadataFile FileName="otmessage-1.xsd" MetadataType="Schema" ID="277b60dc-3065-41dc-881d-2f3f9aa36c22" SourceId="1" SourceUrl="file:///C:/Users/bhill/OneDrive - Keyfactor/Documents/OpenTrust/PKI_SOAP_Developer_Guide-4.9.0/otmessage-1.2.xsd" />
+  </Metadata>
+  <Extensions>
+    <ExtensionFile FileName="configuration91.svcinfo" Name="configuration91.svcinfo" />
+    <ExtensionFile FileName="configuration.svcinfo" Name="configuration.svcinfo" />
+  </Extensions>
+</ReferenceGroup>

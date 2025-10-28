@@ -1,0 +1,50 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<ImplicitUsings>disable</ImplicitUsings>
+		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+		<RootNamespace>Keyfactor.Extensions.CAPlugin.Idnomic</RootNamespace>
+		<AssemblyName>IdnomicCAPlugin</AssemblyName>
+	</PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="BouncyCastle.Cryptography" Version="2.6.2" />
+		<PackageReference Include="Keyfactor.AnyGateway.IAnyCAPlugin" Version="3.0.0" />
+		<PackageReference Include="Keyfactor.Logging" Version="1.1.1" />
+		<PackageReference Include="Keyfactor.PKI" Version="5.5.0" />
+		<PackageReference Include="System.ServiceModel.Primitives" Version="6.0.0" />
+		<PackageReference Include="System.ServiceModel.Http" Version="6.0.0" />
+	</ItemGroup>
+	<ItemGroup>
+		<None Update="manifest.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+  <ItemGroup>
+    <None Include="Connected Services\IdnomicRaService\Keyfactor.AnyGateway.IdnomicCaProxy.IdnomicRaService.OTMessageType.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Connected Services\IdnomicRaService\otmessage-1.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Connected Services\IdnomicRaService\otpkiraconnector-2.wsdl" />
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Connected Services\" />
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadataStorage Include="Connected Services\IdnomicRaService\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Connected Services\IdnomicRaService\configuration91.svcinfo" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Connected Services\IdnomicRaService\configuration.svcinfo" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Connected Services\IdnomicRaService\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup />
+</Project>

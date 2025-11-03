@@ -2,8 +2,8 @@
   "extensions": {
     "Keyfactor.AnyGateway.Extensions.IAnyCAPlugin": {
       "AcmeCaPlugin": {
-        "assemblypath": "Idnomic.dll",
-        "TypeFullName": "Keyfactor.Extensions.CAPlugin.Idnomic.Idnomic"
+        "assemblypath": "IdnomicCAPlugin.dll",
+        "TypeFullName": "Keyfactor.Extensions.CAPlugin.Idnomic.IdnomicCAPlugin"
       }
     }
   }

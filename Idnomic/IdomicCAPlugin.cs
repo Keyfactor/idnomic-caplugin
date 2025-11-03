@@ -173,14 +173,14 @@ public class IdnomicCAPlugin : IAnyCAPlugin
         IdnomicPluginConfig.Config config = JsonSerializer.Deserialize<IdnomicPluginConfig.Config>(rawData);
 
         _logger.LogTrace($"IdnomicClientFromCAConnectionData - EndpointAddress: {config.EndpointAddress}");
-        _logger.LogTrace($"IdnomicClientFromCAConnectionData - ClientCertificateLocation: {config.ClientCertificateLocation}");
+        _logger.LogTrace($"IdnomicClientFromCAConnectionData - ClientCertificateLocation: {config.ClientCertLocation}");
         _logger.LogTrace($"IdnomicClientFromCAConnectionData - Enabled: {config.Enabled}");
 
         List<string> missingFields = new List<string>();
 
         if (string.IsNullOrEmpty(config.EndpointAddress)) missingFields.Add(nameof(config.EndpointAddress));
-        if (string.IsNullOrEmpty(config.ClientCertificateLocation)) missingFields.Add(nameof(config.ClientCertificateLocation));
-        if (string.IsNullOrEmpty(config.ClientCertificatePassword)) missingFields.Add(nameof(config.ClientCertificatePassword));
+        if (string.IsNullOrEmpty(config.ClientCertLocation)) missingFields.Add(nameof(config.ClientCertLocation));
+        if (string.IsNullOrEmpty(config.ClientCertPassword)) missingFields.Add(nameof(config.ClientCertPassword));
 
         if (config.Enabled && missingFields.Count > 0)
         {
@@ -194,7 +194,7 @@ public class IdnomicCAPlugin : IAnyCAPlugin
         else
         {
             _logger.LogDebug("Creating new IdnomicClient instance.");
-            Client = new IdnomicClient(config.EndpointAddress, config.ClientCertificateLocation, config.ClientCertificatePassword);
+            Client = new IdnomicClient(config.EndpointAddress, config.ClientCertLocation, config.ClientCertPassword);
         }
 
         if (config.Enabled)

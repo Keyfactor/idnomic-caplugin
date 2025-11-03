@@ -24,16 +24,16 @@ public class IdnomicPluginConfig
     public class ConfigConstants
     {
         public const string EndpointAddress = "EndpointAddress";
-        public const string ClientCertificateLocation = "ClientCertificateLocation";
-        public const string ClientCertificatePassword = "ClientCertificatePassword";
+        public const string ClientCertLocation = "ClientCertLocation";
+        public const string ClientCertPassword = "ClientCertPassword";
         public const string Enabled = "Enabled";
     }
 
     public class Config
     {
         public string EndpointAddress { get; set; }
-        public string ClientCertificateLocation { get; set; }
-        public string ClientCertificatePassword { get; set; }
+        public string ClientCertLocation { get; set; }
+        public string ClientCertPassword { get; set; }
         public bool Enabled { get; set; }
     }
 
@@ -53,14 +53,14 @@ public class IdnomicPluginConfig
                 DefaultValue = "",
                 Type = "String"
             },
-            [ConfigConstants.ClientCertificateLocation] = new PropertyConfigInfo()
+            [ConfigConstants.ClientCertLocation] = new PropertyConfigInfo()
             {
                 Comments = "The file path to the client certificate used for mutual TLS authentication with the Idnomic service.",
                 Hidden = false,
                 DefaultValue = "",
                 Type = "String"
             },
-            [ConfigConstants.ClientCertificatePassword] = new PropertyConfigInfo()
+            [ConfigConstants.ClientCertPassword] = new PropertyConfigInfo()
             {
                 Comments = "The password for the client certificate.",
                 Hidden = true,

@@ -1,0 +1,10 @@
+{
+  "extensions": {
+    "Keyfactor.AnyGateway.Extensions.IAnyCAPlugin": {
+      "AcmeCaPlugin": {
+        "assemblypath": "Idnomic.dll",
+        "TypeFullName": "Keyfactor.Extensions.CAPlugin.Idnomic.AcmeCaPlugin"
+      }
+    }
+  }
+}

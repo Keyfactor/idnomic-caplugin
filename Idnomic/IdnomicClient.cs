@@ -75,25 +75,41 @@ public class IdnomicClient : IIdnomicClient
     {
         _logger.MethodEntry();
 
-        var binding = new BasicHttpsBinding { MaxReceivedMessageSize = 2147483647 };
-        ServicePointManager.ServerCertificateValidationCallback += (sender, certificate, chain, sslPolicyErrors) => true;
+        // Force TLS 1.2+
+        System.Net.ServicePointManager.SecurityProtocol =
+            SecurityProtocolType.Tls12 | SecurityProtocolType.Tls13;
+
+        var binding = new BasicHttpsBinding
+        {
+            MaxReceivedMessageSize = int.MaxValue
+        };
+
+        binding.Security.Mode = BasicHttpsSecurityMode.Transport;
         binding.Security.Transport.ClientCredentialType = HttpClientCredentialType.Certificate;
 
         var endpoint = new EndpointAddress(_endpointAddress);
         _soapClient = new OTPKIRAConnectorSOAPPortTypeClient(binding, endpoint);
 
-        _logger.LogTrace("SOAP Client Created");
-        var cert = new X509Certificate2(_clientCertificateLocation, _clientCertificatePassword);
-        _logger.LogTrace("Obtained Client Certificate");
+        // Load the client certificate WITH private key
+        var cert = new X509Certificate2(
+            _clientCertificateLocation,
+            _clientCertificatePassword,
+            X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.Exportable);
 
-        if (_soapClient.ClientCredentials != null)
-        {
-            _soapClient.ClientCredentials.ClientCertificate.Certificate = cert;
-        }
-        _logger.LogTrace("Client Certificate Assigned to SOAP Client");
+        _soapClient.ClientCredentials.ClientCertificate.Certificate = cert;
 
+        // 🔥 Ignore server-side certificate validation entirely (hostname + trust)
+        _soapClient.ClientCredentials.ServiceCertificate.SslCertificateAuthentication =
+            new System.ServiceModel.Security.X509ServiceCertificateAuthentication
+            {
+                CertificateValidationMode = System.ServiceModel.Security.X509CertificateValidationMode.None,
+                RevocationMode = X509RevocationMode.NoCheck
+            };
+
+        _logger.LogTrace("SOAP client created with client certificate and validation disabled");
         _logger.MethodExit();
     }
+
 
     public override string ToString()
     {

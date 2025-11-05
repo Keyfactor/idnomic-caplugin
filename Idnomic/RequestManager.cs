@@ -195,25 +195,23 @@ public class RequestManager
         {
             _logger.MethodEntry();
             _logger.LogTrace($"csr: {csr}");
-            var pemCert = Pemify(csr);
-            _logger.LogTrace($"pemCert Intermediate: {pemCert}");
-            pemCert = "-----BEGIN CERTIFICATE REQUEST-----\n" + pemCert;
-            pemCert += "\n-----END CERTIFICATE REQUEST-----";
-            _logger.LogTrace($"pemCertFinal: {pemCert}");
+            //var pemCert = Pemify(csr);
+            _logger.LogTrace($"pemCert Intermediate: {csr}");
 
-            var sr = new StringReader(pemCert);
+            var sr = new StringReader(csr);
             var reader = new PemReader(sr);
             var req = reader.ReadObject() as Pkcs10CertificationRequest;
             var info = req?.GetCertificationRequestInfo();
             var subject = info?.Subject.ToString();
 
-            var itemArray = new Item[6];
+            var itemArray = new Item[7];
             var i1 = new Item { key = "countryName1", Item1ElementName = Item1ChoiceType.Value, Item1 = GetValueFromCsr("C", subject) };
             var i2 = new Item { key = "adminEmail1", Item1ElementName = Item1ChoiceType.Value, Item1 = GetValueFromCsr("E", subject) };
             var i3 = new Item { key = "zone", Item1ElementName = Item1ChoiceType.Value, Item1 = zone };
             var i4 = new Item { key = "organizationName1", Item1ElementName = Item1ChoiceType.Value, Item1 = GetValueFromCsr("O", subject) };
-            var i5 = new Item { key = "pkcs10", Item1ElementName = Item1ChoiceType.Value, Item1 = pemCert };
+            var i5 = new Item { key = "pkcs10", Item1ElementName = Item1ChoiceType.Value, Item1 = csr };
             var i6 = new Item { key = "commonName1", Item1ElementName = Item1ChoiceType.Value, Item1 = GetValueFromCsr("CN", subject) };
+            var i8 = new Item { key = "revocationCode1", Item1ElementName = Item1ChoiceType.Value, Item1 = "0" };
 
             _logger.LogTrace($"i1 = {i1}");
             _logger.LogTrace($"i2 = {i2}");
@@ -221,6 +219,7 @@ public class RequestManager
             _logger.LogTrace($"i4 = {i4}");
             _logger.LogTrace($"i5 = {i5}");
             _logger.LogTrace($"i6 = {i6}");
+            _logger.LogTrace($"i8 = {i8}");
 
             itemArray[0] = i1;
             itemArray[1] = i2;
@@ -228,6 +227,7 @@ public class RequestManager
             itemArray[3] = i4;
             itemArray[4] = i5;
             itemArray[5] = i6;
+            itemArray[6] = i8;
 
             var h1 = new Item { Item1ElementName = Item1ChoiceType.HashTable, Item1 = itemArray, key = "1" };
 

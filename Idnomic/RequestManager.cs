@@ -195,7 +195,6 @@ public class RequestManager
         {
             _logger.MethodEntry();
             _logger.LogTrace($"csr: {csr}");
-            //var pemCert = Pemify(csr);
             _logger.LogTrace($"pemCert Intermediate: {csr}");
 
             var sr = new StringReader(csr);

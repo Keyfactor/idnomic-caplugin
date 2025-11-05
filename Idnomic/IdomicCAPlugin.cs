@@ -66,15 +66,27 @@ public class IdnomicCAPlugin : IAnyCAPlugin
     public Dictionary<string, PropertyConfigInfo> GetTemplateParameterAnnotations()
     {
         _logger.MethodEntry();
+
+        // Return static annotations - this method is called before Initialize()
+        // so the client is not available yet.
+        var annotations = IdnomicPluginConfig.GetTemplateParameterAnnotations();
+
+        _logger.LogDebug($"Returning {annotations.Count} static template parameter annotations");
         _logger.MethodExit();
-        return IdnomicPluginConfig.GetTemplateParameterAnnotations();
+        return annotations;
     }
 
     public List<string> GetProductIds()
     {
         _logger.MethodEntry();
+
+        // This is called after Initialize(), so client is available
+        // Templates are fetched dynamically from the CA
+        var templates = Client.GetTemplates();
+
+        _logger.LogDebug($"Retrieved {templates.Count} templates from CA");
         _logger.MethodExit();
-        return Client.GetTemplates();
+        return templates;
     }
 
     public async Task Ping()
@@ -102,14 +114,16 @@ public class IdnomicCAPlugin : IAnyCAPlugin
     {
         _logger.MethodEntry();
 
-        // Validate that Zone parameter is present
+        // With static annotations, we just validate that required parameters are present
+        // The Zone parameter is always required
         if (productInfo.ProductParameters == null ||
             !productInfo.ProductParameters.ContainsKey(IdnomicPluginConfig.EnrollmentParametersConstants.Zone) ||
             string.IsNullOrWhiteSpace(productInfo.ProductParameters[IdnomicPluginConfig.EnrollmentParametersConstants.Zone]))
         {
-            throw new ArgumentException($"Required parameter '{IdnomicPluginConfig.EnrollmentParametersConstants.Zone}' is missing or empty");
+            throw new ArgumentException("Zone parameter is required");
         }
 
+        _logger.LogDebug($"Product info validated for template '{productInfo.ProductID}'");
         _logger.MethodExit();
         return Task.CompletedTask;
     }
@@ -148,7 +162,12 @@ public class IdnomicCAPlugin : IAnyCAPlugin
             throw new Exception($"Unsupported CSR format: {requestFormat}");
         }
 
-        string zone = productInfo.ProductParameters[IdnomicPluginConfig.EnrollmentParametersConstants.Zone];
+        // Get the Zone parameter
+        string zone = productInfo.ProductParameters.ContainsKey(IdnomicPluginConfig.EnrollmentParametersConstants.Zone)
+            ? productInfo.ProductParameters[IdnomicPluginConfig.EnrollmentParametersConstants.Zone]
+            : throw new ArgumentException("Zone parameter is required");
+
+        _logger.LogDebug($"Enrolling certificate with ProductID: {productInfo.ProductID}, Zone: {zone}");
 
         _logger.MethodExit();
         return Client.Enroll(csr, productInfo.ProductID, zone, CancellationToken.None);

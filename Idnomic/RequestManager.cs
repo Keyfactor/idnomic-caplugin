@@ -16,7 +16,6 @@ limitations under the License.
 
 using System;
 using System.IO;
-using System.ServiceModel.Channels;
 using Keyfactor.AnyGateway.IdnomicCaProxy.IdnomicRaService;
 using Keyfactor.Logging;
 using Keyfactor.PKI.Enums.EJBCA;
@@ -77,20 +76,47 @@ public class RequestManager
             switch (revokeReason)
             {
                 case 3:
-                    return "Affiliation Changed";
+                    return "affiliationChanged";
                 case 5:
-                    return "Cessation of Operation";
+                    return "cessationOfOperation";
                 case 1:
-                    return "Key Compromised";
+                    return "keyCompromise";
                 case 4:
-                    return "Superseded";
+                    return "superseded";
                 default:
-                    return "Unknown Reason";
+                    return "unspecified";
             }
         }
         catch (Exception e)
         {
             _logger.LogError($"Exception Occurred in GetRevokeReasonText: {e.Message}");
+            throw;
+        }
+    }
+
+    public OTMessageType GetListProfilesRequest()
+    {
+        try
+        {
+            _logger.MethodEntry();
+
+            // Empty array for list_profiles - no parameters needed
+            var itemArray = new Item[0];
+
+            var msg = new AnyGateway.IdnomicCaProxy.IdnomicRaService.Message
+            {
+                ItemElementName = ItemChoiceType.Array,
+                Item = itemArray
+            };
+
+            var msgType = new OTMessageType { Message = msg };
+
+            _logger.MethodExit();
+            return msgType;
+        }
+        catch (Exception e)
+        {
+            _logger.LogError($"Exception Occurred in GetListProfilesRequest: {e.Message}");
             throw;
         }
     }
@@ -103,7 +129,7 @@ public class RequestManager
             _logger.LogTrace($"Reason: {reason}, Issuer: {issuer}, serialNumber: {serialNumber}");
             Item[] itemArray = new Item[3];
 
-            var i1 = new Item { key = "comment", Item1ElementName = Item1ChoiceType.Value, Item1 = reason };
+            var i1 = new Item { key = "reason", Item1ElementName = Item1ChoiceType.Value, Item1 = reason };
             var i2 = new Item { key = "issuer", Item1ElementName = Item1ChoiceType.Value, Item1 = issuer };
             var i3 = new Item { key = "serial", Item1ElementName = Item1ChoiceType.Value, Item1 = serialNumber };
 
@@ -136,7 +162,8 @@ public class RequestManager
             var i = 0;
             foreach (var filterItem in searchString.Split('|'))
             {
-                var f1 = new Item { Item1ElementName = Item1ChoiceType.Value, Item1 = filterItem.Split('=')[1], key = filterItem.Split('=')[0] };
+                var parts = filterItem.Split('=');
+                var f1 = new Item { Item1ElementName = Item1ChoiceType.Value, Item1 = parts.Length > 1 ? parts[1] : "", key = parts[0] };
                 filterArray[i] = f1;
                 i++;
             }
@@ -232,12 +259,21 @@ public class RequestManager
         try
         {
             _logger.MethodEntry();
+            if (string.IsNullOrEmpty(csr))
+            {
+                _logger.MethodExit();
+                return "";
+            }
+
             var csrValues = csr.Split(',');
             foreach (var val in csrValues)
             {
-                var nmValPair = val.Split('=');
-                _logger.LogTrace($"nmValPair {nmValPair}");
-                if (subjectItem == nmValPair[0]) return nmValPair[1];
+                var nmValPair = val.Trim().Split('=');
+                if (nmValPair.Length == 2 && subjectItem == nmValPair[0].Trim())
+                {
+                    _logger.MethodExit();
+                    return nmValPair[1].Trim();
+                }
             }
             _logger.MethodExit();
             return "";

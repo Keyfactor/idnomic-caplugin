@@ -110,7 +110,6 @@ public class IdnomicClient : IIdnomicClient
         _logger.MethodExit();
     }
 
-
     public override string ToString()
     {
         return $"[endpointAddress={_endpointAddress}]";
@@ -119,7 +118,6 @@ public class IdnomicClient : IIdnomicClient
     /// <summary>
     /// Enables the <see cref="IdnomicClient"/> client. This must be called before any other operations are performed.
     /// </summary>
-    /// <returns></returns>
     public Task Enable()
     {
         _logger.MethodEntry();
@@ -135,7 +133,6 @@ public class IdnomicClient : IIdnomicClient
     /// <summary>
     /// Disables the <see cref="IdnomicClient"/> client. After this is called, no further operations can be performed until <see cref="Enable"/> is called.
     /// </summary>
-    /// <returns></returns>
     public Task Disable()
     {
         _logger.MethodEntry();
@@ -151,9 +148,6 @@ public class IdnomicClient : IIdnomicClient
     /// <summary>
     /// Determines if the client is enabled.
     /// </summary>
-    /// <returns>
-    /// A <see cref="bool"/> indicating if the client is enabled.
-    /// </returns>
     public bool IsEnabled()
     {
         _logger.MethodEntry();
@@ -164,10 +158,6 @@ public class IdnomicClient : IIdnomicClient
     /// <summary>
     /// Attempts to connect to the Idnomic service to verify connectivity.
     /// </summary>
-    /// <returns>
-    /// Returns nothing if the connection is successful.
-    /// </returns>
-    /// <exception cref="Exception">Thrown if connection validation fails or if the <see cref="IdnomicClient"/> was not enabled via the <see cref="Enable"/> method.</exception>
     public async Task ValidateConnection()
     {
         _logger.MethodEntry();
@@ -194,21 +184,6 @@ public class IdnomicClient : IIdnomicClient
     /// <summary>
     /// Downloads all issued certificates from the Idnomic service and adds them to the provided <see cref="BlockingCollection{T}"/>.
     /// </summary>
-    /// <param name="certificatesBuffer">
-    /// A <see cref="BlockingCollection{T}"/> to which the downloaded certificates will be added.
-    /// </param>
-    /// <param name="cancelToken">
-    /// A <see cref="CancellationToken"/> that can be used to cancel the operation.
-    /// </param>
-    /// <param name="issuedAfter">
-    /// Optional parameter to filter certificates issued after a specific date/time. Currently not implemented for Idnomic.
-    /// </param>
-    /// <returns>
-    /// The number of certificates downloaded.
-    /// </returns>
-    /// <exception cref="Exception">
-    /// Thrown if the <see cref="BlockingCollection{T}"/> is null or if the operation fails.
-    /// </exception>
     public async Task<int> DownloadAllIssuedCertificates(BlockingCollection<AnyCAPluginCertificate> certificatesBuffer, CancellationToken cancelToken, DateTime? issuedAfter = null)
     {
         _logger.MethodEntry();
@@ -275,12 +250,6 @@ public class IdnomicClient : IIdnomicClient
     /// <summary>
     /// Downloads a certificate with the specified <paramref name="caRequestId"/> in PEM format and stores it in a <see cref="AnyCAPluginCertificate"/>.
     /// </summary>
-    /// <param name="caRequestId">
-    /// The CA Request ID (serial number) of the certificate to download.
-    /// </param>
-    /// <returns>
-    /// Returns a <see cref="Task"/> and task result as a <see cref="AnyCAPluginCertificate"/> containing the downloaded certificate.
-    /// </returns>
     public async Task<AnyCAPluginCertificate> DownloadCertificate(string caRequestId)
     {
         _logger.MethodEntry();
@@ -359,21 +328,6 @@ public class IdnomicClient : IIdnomicClient
     /// <summary>
     /// Enrolls a certificate and returns the result.
     /// </summary>
-    /// <param name="csr">
-    /// The Certificate Signing Request in PEM format.
-    /// </param>
-    /// <param name="productId">
-    /// The certificate profile/template ID to use for enrollment.
-    /// </param>
-    /// <param name="zone">
-    /// The Idnomic zone identifier.
-    /// </param>
-    /// <param name="cancelToken">
-    /// The <see cref="CancellationToken"/> to cancel the operation.
-    /// </param>
-    /// <returns>
-    /// Returns a <see cref="Task"/> and task result as an <see cref="EnrollmentResult"/> containing the result of the enrollment.
-    /// </returns>
     public async Task<EnrollmentResult> Enroll(string csr, string productId, string zone, CancellationToken cancelToken)
     {
         try
@@ -444,13 +398,6 @@ public class IdnomicClient : IIdnomicClient
     /// <summary>
     /// Revokes a certificate with the specified <paramref name="caRequestId"/> and <paramref name="revocationReason"/>.
     /// </summary>
-    /// <param name="caRequestId">
-    /// The CA Request ID (serial number) of the certificate to revoke.
-    /// </param>
-    /// <param name="revocationReason">
-    /// The revocation reason code.
-    /// </param>
-    /// <returns></returns>
     public async Task RevokeCertificate(string caRequestId, uint revocationReason)
     {
         _logger.MethodEntry();
@@ -489,20 +436,41 @@ public class IdnomicClient : IIdnomicClient
     /// <summary>
     /// Retrieves the certificate profiles available in the Idnomic CA. 
     /// </summary>
-    /// <returns>
-    /// A <see cref="List{T}"/> of <see cref="string"/> containing the available certificate profile names.
-    /// </returns>
     public List<string> GetTemplates()
     {
         _logger.MethodEntry();
         EnsureClientIsEnabled();
 
-        // Idnomic doesn't have a direct API to list templates/profiles
-        // This would need to be configured or discovered through other means
-        _logger.LogDebug("GetTemplates called - returning empty list as Idnomic doesn't expose template enumeration");
+        _logger.LogDebug("Retrieving certificate profiles from Idnomic service");
 
-        _logger.MethodExit();
-        return new List<string>();
+        try
+        {
+            var request = _requestManager.GetListProfilesRequest();
+            var response = _soapClient.list_profiles(request);
+
+            var profiles = new List<string>();
+
+            if (response?.Message?.Item is Item[] items)
+            {
+                foreach (var item in items)
+                {
+                    if (item.Item1 is string profileName && !string.IsNullOrEmpty(profileName))
+                    {
+                        profiles.Add(profileName);
+                        _logger.LogTrace($"Found profile: {profileName}");
+                    }
+                }
+            }
+
+            _logger.LogDebug($"Retrieved {profiles.Count} certificate profiles");
+            _logger.MethodExit();
+            return profiles;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error retrieving certificate profiles: {ex.Message}");
+            throw new Exception($"Failed to retrieve certificate profiles: {ex.Message}", ex);
+        }
     }
 
     private Item[] GetCertificateByTrackingId(string serialNumber)

@@ -184,15 +184,385 @@ Each certificate template discovered from Idnomic requires configuration when us
 4. **Least Privilege**: Request client certificates with minimal required permissions in the Idnomic PKI system
 5. **Audit Logging**: Enable comprehensive logging in both the Gateway and Idnomic PKI for security monitoring
 
-## Certificate Template Creation Step
+## Troubleshooting
 
-TODO Certificate Template Creation Step is a required section
+### Connection Issues
+- Verify the RA connector endpoint URL is correct and accessible
+- Check that the client certificate is valid and not expired
+- Confirm the client certificate is trusted by the Idnomic PKI system
+- Review Gateway logs for SOAP communication errors
 
-## Custom Enrollment Parameter Creation Step
+### Profile Discovery Issues
+- Ensure the client certificate has permissions to call `list_profiles`
+- Verify the RA connector is properly configured in Idnomic
+- Check that profiles are published and available in the Idnomic system
 
-TODO Custom Enrollment Parameter Creation Step is an optional section. If this section doesn't seem necessary on initial glance, please delete it. Refer to the docs on [Confluence](https://keyfactor.atlassian.net/wiki/x/SAAyHg) for more info
+### Enrollment Failures
+- Verify the Zone parameter exactly matches a configured zone in Idnomic
+- Confirm the selected profile supports the requested certificate attributes
+- Check that the client certificate has enrollment permissions for the specified zone
+- Review Idnomic PKI logs for detailed error messages
 
-## Mechanics
+### Synchronization Issues
+- Confirm the client certificate has permissions to call `search_for_certificates`
+- Verify network connectivity and timeout settings
+- For large certificate databases, consider adjusting synchronization schedules
 
-TODO Mechanics is an optional section. If this section doesn't seem necessary on initial glance, please delete it. Refer to the docs on [Confluence](https://keyfactor.atlassian.net/wiki/x/SAAyHg) for more info
+## Test Cases
+
+### Test Case 1: CA Connection Validation
+
+**Objective**: Verify that the Gateway can successfully connect to the Idnomic RA connector using client certificate authentication.
+
+**Prerequisites**:
+- Idnomic PKI system is operational
+- Valid client certificate (PFX) is available
+- RA connector endpoint is accessible
+
+**Test Steps**:
+1. Configure the CA in AnyCA Gateway with valid connection parameters
+2. Click "Test Connection" or trigger the Ping operation
+3. Observe the connection result
+
+**Expected Results**:
+- Connection succeeds without errors
+- Gateway logs show successful SOAP authentication
+- No certificate validation errors occur
+
+**Verification**:
+- Review Gateway logs for successful connection message
+- Check Idnomic PKI logs for incoming authenticated connection
+- Verify no SSL/TLS errors in either system
+
+---
+
+### Test Case 2: Profile Discovery
+
+**Objective**: Verify that the Gateway can retrieve the list of available certificate profiles from Idnomic PKI.
+
+**Prerequisites**:
+- CA connection is successfully configured
+- At least one certificate profile is configured in Idnomic PKI
+- Client certificate has permissions to call `list_profiles`
+
+**Test Steps**:
+1. Save the CA configuration in AnyCA Gateway
+2. Navigate to the template/product configuration section
+3. Observe the list of available Product IDs
+
+**Expected Results**:
+- List of profiles is populated automatically
+- Profile names match those configured in Idnomic PKI
+- No empty or null profile names appear
+
+**Verification**:
+- Compare the list of profiles in Gateway with Idnomic PKI configuration
+- Verify profile names are correctly displayed
+- Check Gateway logs for successful `list_profiles` SOAP call
+
+---
+
+### Test Case 3: Certificate Enrollment - Valid Request
+
+**Objective**: Verify successful certificate enrollment through the plugin.
+
+**Prerequisites**:
+- CA and template are properly configured
+- Valid Zone parameter is configured for the template
+- Test CSR is available
+
+**Test Steps**:
+1. Submit an enrollment request via Keyfactor Command
+2. Specify the Idnomic CA and a valid template
+3. Provide a valid PKCS#10 CSR
+4. Wait for enrollment to complete
+
+**Expected Results**:
+- Enrollment completes successfully
+- Certificate is issued by Idnomic PKI
+- Certificate is returned to Keyfactor Command
+- Certificate appears in Command inventory
+
+**Verification**:
+- Verify certificate details match the CSR
+- Confirm certificate is present in Idnomic PKI database
+- Check that certificate chain is properly constructed
+- Validate certificate can be used for its intended purpose
+
+---
+
+### Test Case 4: Certificate Enrollment - Invalid Zone
+
+**Objective**: Verify proper error handling when an invalid zone is specified.
+
+**Prerequisites**:
+- CA and template are configured
+- Zone parameter is set to a non-existent zone name
+
+**Test Steps**:
+1. Submit an enrollment request with invalid Zone parameter
+2. Observe the enrollment result
+
+**Expected Results**:
+- Enrollment fails with clear error message
+- Error message indicates invalid zone
+- No certificate is issued
+- System remains stable
+
+**Verification**:
+- Check error message clarity and accuracy
+- Verify Gateway logs contain detailed error information
+- Confirm no partial enrollment occurred in Idnomic PKI
+
+---
+
+### Test Case 5: Certificate Synchronization - Full Sync
+
+**Objective**: Verify full certificate synchronization from Idnomic PKI to Keyfactor Command.
+
+**Prerequisites**:
+- CA is properly configured
+- Multiple certificates exist in Idnomic PKI
+- Synchronization is configured in Command
+
+**Test Steps**:
+1. Trigger a full synchronization job
+2. Wait for synchronization to complete
+3. Verify synchronized certificate count
+
+**Expected Results**:
+- All certificates from Idnomic PKI are synchronized
+- Certificate details are accurate (subject, serial number, dates, etc.)
+- No duplicate certificates appear
+- Synchronization completes without errors
+
+**Verification**:
+- Compare certificate count in Command vs. Idnomic PKI
+- Spot-check several certificates for data accuracy
+- Review synchronization logs for any warnings or errors
+- Verify certificate chains are properly synchronized
+
+---
+
+### Test Case 6: Certificate Synchronization - Incremental Sync
+
+**Objective**: Verify incremental synchronization only retrieves new certificates since last sync.
+
+**Prerequisites**:
+- Initial full synchronization has been completed
+- Timestamp of last sync is recorded
+- New certificates have been issued since last sync
+
+**Test Steps**:
+1. Note the timestamp of the last successful sync
+2. Issue one or more new certificates in Idnomic PKI
+3. Trigger an incremental synchronization
+4. Observe synchronized certificates
+
+**Expected Results**:
+- Only certificates issued after last sync are retrieved
+- Sync completes faster than full sync
+- All new certificates are properly synchronized
+- Previously synchronized certificates are not duplicated
+
+**Verification**:
+- Verify only recent certificates were processed
+- Check sync duration is appropriate for certificate count
+- Review Gateway logs to confirm incremental sync parameters
+- Validate certificate data integrity
+
+---
+
+### Test Case 7: Certificate Revocation - Key Compromise
+
+**Objective**: Verify certificate revocation with reason code 1 (Key Compromise).
+
+**Prerequisites**:
+- A valid certificate issued through the Gateway exists
+- Certificate is not already revoked
+
+**Test Steps**:
+1. Identify a test certificate to revoke
+2. Submit revocation request with reason "Key Compromise" (code 1)
+3. Wait for revocation to complete
+
+**Expected Results**:
+- Revocation succeeds
+- Certificate status changes to "Revoked" in Command
+- Certificate appears on CRL in Idnomic PKI
+- Revocation reason is correctly recorded
+
+**Verification**:
+- Check certificate status in Keyfactor Command
+- Verify certificate appears on Idnomic CRL with correct reason code
+- Confirm revocation timestamp is accurate
+- Validate certificate can no longer be used for authentication
+
+---
+
+### Test Case 8: Certificate Revocation - Multiple Reason Codes
+
+**Objective**: Verify that all supported revocation reason codes work correctly.
+
+**Prerequisites**:
+- Multiple test certificates are available for revocation
+- CA supports all standard revocation reasons
+
+**Test Steps**:
+1. For each supported reason code (0, 1, 2, 3, 4, 5, 6, 9, 10):
+   - Select a test certificate
+   - Submit revocation with the specific reason code
+   - Verify revocation succeeds
+2. Check CRL for correct reason codes
+
+**Expected Results**:
+- All revocation requests succeed
+- Each certificate shows correct revocation reason in CRL
+- No errors occur for any reason code
+
+**Verification**:
+- Download and parse CRL from Idnomic PKI
+- Verify each revoked certificate has correct CRL reason code
+- Confirm all revocations are logged in both systems
+- Check that certificates with reason code 6 (Certificate Hold) can be resumed if supported
+
+---
+
+### Test Case 9: Profile Properties Validation
+
+**Objective**: Verify that profile-specific properties are correctly enforced during enrollment.
+
+**Prerequisites**:
+- Profiles with different configurations exist (key sizes, validity periods, etc.)
+- Zone parameter is correctly configured
+
+**Test Steps**:
+1. Attempt enrollment with CSR matching profile requirements
+2. Attempt enrollment with CSR not matching profile requirements (e.g., wrong key size)
+3. Observe results
+
+**Expected Results**:
+- Valid enrollments succeed
+- Invalid enrollments fail with descriptive error messages
+- Profile constraints are properly enforced by Idnomic PKI
+
+**Verification**:
+- Review error messages for clarity
+- Verify Idnomic PKI rejects non-compliant requests
+- Check that valid certificates meet profile specifications
+- Confirm Gateway properly communicates validation errors
+
+---
+
+### Test Case 10: Client Certificate Expiration Handling
+
+**Objective**: Verify proper error handling when the Gateway client certificate expires or becomes invalid.
+
+**Prerequisites**:
+- Ability to test with expired or invalid client certificate
+- Valid backup client certificate available
+
+**Test Steps**:
+1. Configure Gateway with expired client certificate
+2. Attempt any operation (Ping, Enrollment, Sync)
+3. Observe error handling
+4. Replace with valid certificate and retry
+
+**Expected Results**:
+- Operations fail with clear error indicating certificate issue
+- Error message specifies certificate expiration or invalidity
+- After replacing certificate, operations succeed
+- No system instability occurs
+
+**Verification**:
+- Check error messages are user-friendly and actionable
+- Verify Gateway logs contain detailed certificate validation errors
+- Confirm system recovers gracefully after certificate replacement
+- Review Idnomic PKI logs for authentication failure records
+
+---
+
+### Test Case 11: Network Connectivity Failure
+
+**Objective**: Verify graceful handling of network connectivity issues to the Idnomic RA connector.
+
+**Prerequisites**:
+- Ability to simulate network failure (firewall rule, network disconnection, etc.)
+
+**Test Steps**:
+1. Simulate network connectivity loss to RA connector
+2. Attempt enrollment operation
+3. Observe error handling
+4. Restore network connectivity
+5. Retry operation
+
+**Expected Results**:
+- Operation fails with clear network connectivity error
+- System does not crash or become unstable
+- After connectivity restoration, operations succeed
+- Appropriate timeout handling occurs
+
+**Verification**:
+- Review error messages for clarity
+- Check Gateway logs show connection attempt details
+- Verify timeout values are appropriate
+- Confirm no memory leaks or resource issues during failure
+
+---
+
+### Test Case 12: Concurrent Enrollment Requests
+
+**Objective**: Verify the Gateway can handle multiple simultaneous enrollment requests.
+
+**Prerequisites**:
+- CA is properly configured
+- Multiple test CSRs are available
+- Load testing capability exists
+
+**Test Steps**:
+1. Submit 10 enrollment requests simultaneously
+2. Monitor all requests to completion
+3. Verify all enrollments succeed or fail appropriately
+
+**Expected Results**:
+- All requests are processed
+- No race conditions occur
+- Certificates are correctly issued for valid requests
+- System remains stable under load
+
+**Verification**:
+- Check all requests complete within reasonable time
+- Verify no certificate duplication occurs
+- Review Gateway logs for proper request handling
+- Confirm Idnomic PKI properly queued and processed requests
+- Validate certificate data integrity for all issued certificates
+
+---
+
+### Test Case 13: Large Certificate Synchronization
+
+**Objective**: Verify Gateway performance when synchronizing large numbers of certificates.
+
+**Prerequisites**:
+- Idnomic PKI has 1000+ certificates
+- Adequate system resources available
+
+**Test Steps**:
+1. Trigger full synchronization of large certificate set
+2. Monitor memory usage and performance
+3. Verify synchronization completes successfully
+
+**Expected Results**:
+- Synchronization completes without timeout
+- Memory usage remains within acceptable limits
+- All certificates are synchronized accurately
+- System remains responsive during sync
+
+**Verification**:
+- Monitor Gateway memory and CPU usage during sync
+- Verify certificate count matches Idnomic PKI
+- Check for any timeout or performance warnings in logs
+- Validate random sample of synchronized certificates for accuracy
+
+---
 

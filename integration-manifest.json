@@ -15,25 +15,25 @@
             "ca_plugin_config": [
                 {
                     "name": "EndpointAddress",
-                    "description": "Full URL to the Idnomic RA connector SOAP endpoint. Example: https://idnomic-pki.example.com:8443/RA/connector.cgi"
+                    "description": "The SOAP endpoint address for the Idnomic RA service. For example, 'https://idnomic-server.com/ra-service'."
                 },
                 {
                     "name": "ClientCertLocation",
-                    "description": "Full file path to the client certificate PFX file on the Gateway server. Example: C:\\Certificates\\gateway-client.pfx"
+                    "description": "The file path to the client certificate used for mutual TLS authentication with the Idnomic service."
                 },
                 {
                     "name": "ClientCertPassword",
-                    "description": "Password for the client certificate PFX file. This certificate is used for mutual TLS authentication to the Idnomic PKI system."
+                    "description": "The password for the client certificate."
                 },
                 {
                     "name": "Enabled",
-                    "description": "Flag to enable or disable gateway functionality. Disabling is primarily used to allow creation of the CA prior to configuration information being available. Default: true"
+                    "description": "Flag to Enable or Disable gateway functionality. Disabling is primarily used to allow creation of the CA prior to configuration information being available."
                 }
             ],
             "enrollment_config": [
                 {
                     "name": "Zone",
-                    "description": "REQUIRED: The Idnomic PKI zone where certificates will be issued. Must exactly match a zone configured in the Idnomic PKI system (case-sensitive). Example: Production"
+                    "description": "The Idnomic zone identifier for certificate enrollment. This parameter is required for enrollment operations."
                 }
             ],
             "product_ids": []

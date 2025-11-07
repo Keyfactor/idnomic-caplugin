@@ -1,4 +1,38 @@
-## Overview
+<h1 align="center" style="border-bottom: none">
+    Idnomic PKI  Gateway AnyCA Gateway REST Plugin
+</h1>
+
+<p align="center">
+  <!-- Badges -->
+<img src="https://img.shields.io/badge/integration_status-pilot-3D1973?style=flat-square" alt="Integration Status: pilot" />
+<a href="https://github.com/Keyfactor/idnomic-caplugin/releases"><img src="https://img.shields.io/github/v/release/Keyfactor/idnomic-caplugin?style=flat-square" alt="Release" /></a>
+<img src="https://img.shields.io/github/issues/Keyfactor/idnomic-caplugin?style=flat-square" alt="Issues" />
+<img src="https://img.shields.io/github/downloads/Keyfactor/idnomic-caplugin/total?style=flat-square&label=downloads&color=28B905" alt="GitHub Downloads (all assets, all releases)" />
+</p>
+
+<p align="center">
+  <!-- TOC -->
+  <a href="#support">
+    <b>Support</b>
+  </a> 
+  ·
+  <a href="#requirements">
+    <b>Requirements</b>
+  </a>
+  ·
+  <a href="#installation">
+    <b>Installation</b>
+  </a>
+  ·
+  <a href="#license">
+    <b>License</b>
+  </a>
+  ·
+  <a href="https://github.com/orgs/Keyfactor/repositories?q=anycagateway">
+    <b>Related Integrations</b>
+  </a>
+</p>
+
 
 The Idnomic PKI Gateway plugin extends the capabilities of Idnomic PKI (formerly OpenTrust PKI) to Keyfactor Command via the Keyfactor AnyCA Gateway. This plugin leverages the Idnomic SOAP-based connectors to provide comprehensive certificate lifecycle management. The plugin represents a fully featured AnyCA Plugin with the following capabilities:
 
@@ -14,6 +48,15 @@ The Idnomic PKI Gateway plugin extends the capabilities of Idnomic PKI (formerly
 * **Certificate Revocation**:
     * Request revocation of previously issued certificates
     * Support for standard CRL revocation reasons
+
+## Compatibility
+
+The Idnomic PKI  Gateway AnyCA Gateway REST plugin is compatible with the Keyfactor AnyCA Gateway REST 24.2.0 and later.
+
+## Support
+The Idnomic PKI  Gateway AnyCA Gateway REST plugin is supported by Keyfactor for Keyfactor customers. If you have a support issue, please open a support ticket with your Keyfactor representative. If you have a support issue, please open a support ticket via the Keyfactor Support Portal at https://support.keyfactor.com. 
+
+> To report a problem or suggest a new feature, use the **[Issues](../../issues)** tab. If you want to contribute actual bug fixes or proposed enhancements, use the **[Pull requests](../../pulls)** tab.
 
 ## Requirements
 
@@ -114,52 +157,114 @@ The plugin supports the following standard CRL revocation reasons:
 | 2 | CA Compromise | Certificate Authority has been compromised |
 | 3 | Affiliation Changed | Subject's affiliation has changed |
 | 4 | Superseded | Certificate has been superseded by a new certificate |
+| 5 | Cessation of Operation | Certificate is no longer needed |
+| 6 | Certificate Hold | Temporary suspension (use with caution) |
+| 9 | Privilege Withdrawn | Privileges have been withdrawn |
+| 10 | AA Compromise | Attribute Authority has been compromised |
 
 **Note**: Not all Idnomic PKI configurations support all revocation reasons. Consult your Idnomic administrator for supported reasons in your environment.
 
-## Gateway Registration
+## Installation
 
-### CA Connection Configuration
+1. Install the AnyCA Gateway REST per the [official Keyfactor documentation](https://software.keyfactor.com/Guides/AnyCAGatewayREST/Content/AnyCAGatewayREST/InstallIntroduction.htm).
 
-When registering the Idnomic CA in the AnyCA Gateway, you'll need to provide the following configuration parameters:
+2. On the server hosting the AnyCA Gateway REST, download and unzip the latest [Idnomic PKI  Gateway AnyCA Gateway REST plugin](https://github.com/Keyfactor/idnomic-caplugin/releases/latest) from GitHub.
 
-| Parameter | Description | Required | Example |
-|-----------|-------------|----------|---------|
-| **EndpointAddress** | Full URL to the Idnomic RA connector SOAP endpoint | Yes | `https://idnomic.example.com:8443/RA/connector.cgi` |
-| **ClientCertLocation** | Full file path to the client certificate PFX file on the Gateway server | Yes | `C:\Certificates\gateway-client.pfx` |
-| **ClientCertPassword** | Password for the client certificate PFX file | Yes | `SecureP@ssw0rd` |
-| **Enabled** | Whether the CA connection is enabled | No (default: true) | `true` or `false` |
+3. Copy the unzipped directory (usually called `net6.0` or `net8.0`) to the Extensions directory:
 
-### Template (Product) Configuration
 
-Each certificate template discovered from Idnomic requires configuration when used for enrollment:
+    ```shell
+    Depending on your AnyCA Gateway REST version, copy the unzipped directory to one of the following locations:
+    Program Files\Keyfactor\AnyCA Gateway\AnyGatewayREST\net6.0\Extensions
+    Program Files\Keyfactor\AnyCA Gateway\AnyGatewayREST\net8.0\Extensions
+    ```
 
-| Parameter | Description | Required | Example |
-|-----------|-------------|----------|---------|
-| **Zone** | The Idnomic PKI zone where certificates will be issued | Yes | `Production` |
+    > The directory containing the Idnomic PKI  Gateway AnyCA Gateway REST plugin DLLs (`net6.0` or `net8.0`) can be named anything, as long as it is unique within the `Extensions` directory.
 
-**Important Notes**:
-- Template names (Product IDs) are automatically discovered from Idnomic using the `list_profiles` operation
-- The Zone parameter must exactly match a zone configured in your Idnomic PKI system
-- Zone names are case-sensitive
-- Each template can be configured with a different zone if needed
+4. Restart the AnyCA Gateway REST service.
 
-### Gateway Registration Notes
+5. Navigate to the AnyCA Gateway REST portal and verify that the Gateway recognizes the Idnomic PKI  Gateway plugin by hovering over the ⓘ symbol to the right of the Gateway on the top left of the portal.
 
-- Each defined Certificate Authority in the AnyCA Gateway REST can support one Idnomic CA endpoint
-- If you have multiple Idnomic PKI instances or need to issue from different zones with different permissions, you must define multiple Certificate Authorities in the AnyCA Gateway
-- Each CA configuration will manifest in Command as a separate CA entry
-- The plugin uses SOAP-based communication exclusively; ensure the RA connector endpoint is properly configured for SOAP access
-- Client certificate authentication is mandatory and cannot be disabled
-- The "Enabled" flag allows you to temporarily disable a CA connection without removing the configuration
+## Configuration
 
-### Security Considerations
+1. Follow the [official AnyCA Gateway REST documentation](https://software.keyfactor.com/Guides/AnyCAGatewayREST/Content/AnyCAGatewayREST/AddCA-Gateway.htm) to define a new Certificate Authority, and use the notes below to configure the **Gateway Registration** and **CA Connection** tabs:
 
-1. **Certificate Storage**: Store client certificates in a secure location with restricted file system permissions
-2. **Password Management**: Use strong passwords for client certificate PFX files and consider using a secrets management system
-3. **Network Security**: Ensure TLS/SSL is properly configured for the RA connector endpoint
-4. **Least Privilege**: Request client certificates with minimal required permissions in the Idnomic PKI system
-5. **Audit Logging**: Enable comprehensive logging in both the Gateway and Idnomic PKI for security monitoring
+    * **Gateway Registration**
+
+        ### CA Connection Configuration
+
+        When registering the Idnomic CA in the AnyCA Gateway, you'll need to provide the following configuration parameters:
+
+        | Parameter | Description | Required | Example |
+        |-----------|-------------|----------|---------|
+        | **EndpointAddress** | Full URL to the Idnomic RA connector SOAP endpoint | Yes | `https://idnomic.example.com:8443/RA/connector.cgi` |
+        | **ClientCertLocation** | Full file path to the client certificate PFX file on the Gateway server | Yes | `C:\Certificates\gateway-client.pfx` |
+        | **ClientCertPassword** | Password for the client certificate PFX file | Yes | `SecureP@ssw0rd` |
+        | **Enabled** | Whether the CA connection is enabled | No (default: true) | `true` or `false` |
+
+        ### Template (Product) Configuration
+
+        Each certificate template discovered from Idnomic requires configuration when used for enrollment:
+
+        | Parameter | Description | Required | Example |
+        |-----------|-------------|----------|---------|
+        | **Zone** | The Idnomic PKI zone where certificates will be issued | Yes | `Production` |
+
+        **Important Notes**:
+        - Template names (Product IDs) are automatically discovered from Idnomic using the `list_profiles` operation
+        - The Zone parameter must exactly match a zone configured in your Idnomic PKI system
+        - Zone names are case-sensitive
+        - Each template can be configured with a different zone if needed
+
+        ### Configuration Example
+
+        **CA Configuration in AnyCA Gateway**:
+        ```json
+        {
+          "EndpointAddress": "https://idnomic-pki.example.com:8443/RA/connector.cgi",
+          "ClientCertLocation": "C:\\Program Files\\Keyfactor\\AnyGateway\\Certificates\\gateway-client.pfx",
+          "ClientCertPassword": "MySecurePassword123!",
+          "Enabled": true
+        }
+        ```
+
+        **Template Configuration** (for each profile):
+        ```json
+        {
+          "Zone": "Production"
+        }
+        ```
+
+        ### Gateway Registration Notes
+
+        - Each defined Certificate Authority in the AnyCA Gateway REST can support one Idnomic CA endpoint
+        - If you have multiple Idnomic PKI instances or need to issue from different zones with different permissions, you must define multiple Certificate Authorities in the AnyCA Gateway
+        - Each CA configuration will manifest in Command as a separate CA entry
+        - The plugin uses SOAP-based communication exclusively; ensure the RA connector endpoint is properly configured for SOAP access
+        - Client certificate authentication is mandatory and cannot be disabled
+        - The "Enabled" flag allows you to temporarily disable a CA connection without removing the configuration
+
+        ### Security Considerations
+
+        1. **Certificate Storage**: Store client certificates in a secure location with restricted file system permissions
+        2. **Password Management**: Use strong passwords for client certificate PFX files and consider using a secrets management system
+        3. **Network Security**: Ensure TLS/SSL is properly configured for the RA connector endpoint
+        4. **Least Privilege**: Request client certificates with minimal required permissions in the Idnomic PKI system
+        5. **Audit Logging**: Enable comprehensive logging in both the Gateway and Idnomic PKI for security monitoring
+
+    * **CA Connection**
+
+        Populate using the configuration fields collected in the [requirements](#requirements) section.
+
+        * **EndpointAddress** - The SOAP endpoint address for the Idnomic RA service. For example, 'https://idnomic-server.com/ra-service'. 
+        * **ClientCertLocation** - The file path to the client certificate used for mutual TLS authentication with the Idnomic service. 
+        * **ClientCertPassword** - The password for the client certificate. 
+        * **Enabled** - Flag to Enable or Disable gateway functionality. Disabling is primarily used to allow creation of the CA prior to configuration information being available. 
+
+2. TODO Certificate Template Creation Step is a required section
+
+3. Follow the [official Keyfactor documentation](https://software.keyfactor.com/Guides/AnyCAGatewayREST/Content/AnyCAGatewayREST/AddCA-Keyfactor.htm) to add each defined Certificate Authority to Keyfactor Command and import the newly defined Certificate Templates.
+
 
 ## Troubleshooting
 
@@ -377,7 +482,35 @@ Each certificate template discovered from Idnomic requires configuration when us
 
 ---
 
-### Test Case 8: Profile Properties Validation
+### Test Case 8: Certificate Revocation - Multiple Reason Codes
+
+**Objective**: Verify that all supported revocation reason codes work correctly.
+
+**Prerequisites**:
+- Multiple test certificates are available for revocation
+- CA supports all standard revocation reasons
+
+**Test Steps**:
+1. For each supported reason code (0, 1, 2, 3, 4, 5, 6, 9, 10):
+   - Select a test certificate
+   - Submit revocation with the specific reason code
+   - Verify revocation succeeds
+2. Check CRL for correct reason codes
+
+**Expected Results**:
+- All revocation requests succeed
+- Each certificate shows correct revocation reason in CRL
+- No errors occur for any reason code
+
+**Verification**:
+- Download and parse CRL from Idnomic PKI
+- Verify each revoked certificate has correct CRL reason code
+- Confirm all revocations are logged in both systems
+- Check that certificates with reason code 6 (Certificate Hold) can be resumed if supported
+
+---
+
+### Test Case 9: Profile Properties Validation
 
 **Objective**: Verify that profile-specific properties are correctly enforced during enrollment.
 
@@ -403,7 +536,7 @@ Each certificate template discovered from Idnomic requires configuration when us
 
 ---
 
-### Test Case 9: Client Certificate Expiration Handling
+### Test Case 10: Client Certificate Expiration Handling
 
 **Objective**: Verify proper error handling when the Gateway client certificate expires or becomes invalid.
 
@@ -431,8 +564,95 @@ Each certificate template discovered from Idnomic requires configuration when us
 
 ---
 
+### Test Case 11: Network Connectivity Failure
 
-## Certificate Template Creation Step
+**Objective**: Verify graceful handling of network connectivity issues to the Idnomic RA connector.
 
-TODO Certificate Template Creation Step is a required section
+**Prerequisites**:
+- Ability to simulate network failure (firewall rule, network disconnection, etc.)
 
+**Test Steps**:
+1. Simulate network connectivity loss to RA connector
+2. Attempt enrollment operation
+3. Observe error handling
+4. Restore network connectivity
+5. Retry operation
+
+**Expected Results**:
+- Operation fails with clear network connectivity error
+- System does not crash or become unstable
+- After connectivity restoration, operations succeed
+- Appropriate timeout handling occurs
+
+**Verification**:
+- Review error messages for clarity
+- Check Gateway logs show connection attempt details
+- Verify timeout values are appropriate
+- Confirm no memory leaks or resource issues during failure
+
+---
+
+### Test Case 12: Concurrent Enrollment Requests
+
+**Objective**: Verify the Gateway can handle multiple simultaneous enrollment requests.
+
+**Prerequisites**:
+- CA is properly configured
+- Multiple test CSRs are available
+- Load testing capability exists
+
+**Test Steps**:
+1. Submit 10 enrollment requests simultaneously
+2. Monitor all requests to completion
+3. Verify all enrollments succeed or fail appropriately
+
+**Expected Results**:
+- All requests are processed
+- No race conditions occur
+- Certificates are correctly issued for valid requests
+- System remains stable under load
+
+**Verification**:
+- Check all requests complete within reasonable time
+- Verify no certificate duplication occurs
+- Review Gateway logs for proper request handling
+- Confirm Idnomic PKI properly queued and processed requests
+- Validate certificate data integrity for all issued certificates
+
+---
+
+### Test Case 13: Large Certificate Synchronization
+
+**Objective**: Verify Gateway performance when synchronizing large numbers of certificates.
+
+**Prerequisites**:
+- Idnomic PKI has 1000+ certificates
+- Adequate system resources available
+
+**Test Steps**:
+1. Trigger full synchronization of large certificate set
+2. Monitor memory usage and performance
+3. Verify synchronization completes successfully
+
+**Expected Results**:
+- Synchronization completes without timeout
+- Memory usage remains within acceptable limits
+- All certificates are synchronized accurately
+- System remains responsive during sync
+
+**Verification**:
+- Monitor Gateway memory and CPU usage during sync
+- Verify certificate count matches Idnomic PKI
+- Check for any timeout or performance warnings in logs
+- Validate random sample of synchronized certificates for accuracy
+
+---
+
+
+## License
+
+Apache License 2.0, see [LICENSE](LICENSE).
+
+## Related Integrations
+
+See all [Keyfactor Any CA Gateways (REST)](https://github.com/orgs/Keyfactor/repositories?q=anycagateway).

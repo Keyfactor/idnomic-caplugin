@@ -123,7 +123,66 @@ The plugin supports the following standard CRL revocation reasons:
 
 ## Gateway Registration
 
-TODO Gateway Registration is a required section
+### CA Connection Configuration
+
+When registering the Idnomic CA in the AnyCA Gateway, you'll need to provide the following configuration parameters:
+
+| Parameter | Description | Required | Example |
+|-----------|-------------|----------|---------|
+| **EndpointAddress** | Full URL to the Idnomic RA connector SOAP endpoint | Yes | `https://idnomic.example.com:8443/RA/connector.cgi` |
+| **ClientCertLocation** | Full file path to the client certificate PFX file on the Gateway server | Yes | `C:\Certificates\gateway-client.pfx` |
+| **ClientCertPassword** | Password for the client certificate PFX file | Yes | `SecureP@ssw0rd` |
+| **Enabled** | Whether the CA connection is enabled | No (default: true) | `true` or `false` |
+
+### Template (Product) Configuration
+
+Each certificate template discovered from Idnomic requires configuration when used for enrollment:
+
+| Parameter | Description | Required | Example |
+|-----------|-------------|----------|---------|
+| **Zone** | The Idnomic PKI zone where certificates will be issued | Yes | `Production` |
+
+**Important Notes**:
+- Template names (Product IDs) are automatically discovered from Idnomic using the `list_profiles` operation
+- The Zone parameter must exactly match a zone configured in your Idnomic PKI system
+- Zone names are case-sensitive
+- Each template can be configured with a different zone if needed
+
+### Configuration Example
+
+**CA Configuration in AnyCA Gateway**:
+```json
+{
+  "EndpointAddress": "https://idnomic-pki.example.com:8443/RA/connector.cgi",
+  "ClientCertLocation": "C:\\Program Files\\Keyfactor\\AnyGateway\\Certificates\\gateway-client.pfx",
+  "ClientCertPassword": "MySecurePassword123!",
+  "Enabled": true
+}
+```
+
+**Template Configuration** (for each profile):
+```json
+{
+  "Zone": "Production"
+}
+```
+
+### Gateway Registration Notes
+
+- Each defined Certificate Authority in the AnyCA Gateway REST can support one Idnomic CA endpoint
+- If you have multiple Idnomic PKI instances or need to issue from different zones with different permissions, you must define multiple Certificate Authorities in the AnyCA Gateway
+- Each CA configuration will manifest in Command as a separate CA entry
+- The plugin uses SOAP-based communication exclusively; ensure the RA connector endpoint is properly configured for SOAP access
+- Client certificate authentication is mandatory and cannot be disabled
+- The "Enabled" flag allows you to temporarily disable a CA connection without removing the configuration
+
+### Security Considerations
+
+1. **Certificate Storage**: Store client certificates in a secure location with restricted file system permissions
+2. **Password Management**: Use strong passwords for client certificate PFX files and consider using a secrets management system
+3. **Network Security**: Ensure TLS/SSL is properly configured for the RA connector endpoint
+4. **Least Privilege**: Request client certificates with minimal required permissions in the Idnomic PKI system
+5. **Audit Logging**: Enable comprehensive logging in both the Gateway and Idnomic PKI for security monitoring
 
 ## Certificate Template Creation Step
 

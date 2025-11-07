@@ -65,7 +65,7 @@ The Idnomic PKI  Gateway AnyCA Gateway REST plugin is supported by Keyfactor for
 Before configuring the AnyCA Gateway plugin, ensure the following prerequisites are met on your Idnomic PKI system:
 
 1. **Idnomic PKI Installation**:
-   - Idnomic PKI server must be installed and operational
+   - Idnomic PKI server must be installed and operational.  Only tested with 4.9.2 version of IDNOMIC.  Other version may or may not work.
    - RA (Registration Authority) connector must be enabled and accessible
    - SOAP interface must be configured and reachable
 

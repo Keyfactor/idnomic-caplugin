@@ -114,10 +114,6 @@ The plugin supports the following standard CRL revocation reasons:
 | 2 | CA Compromise | Certificate Authority has been compromised |
 | 3 | Affiliation Changed | Subject's affiliation has changed |
 | 4 | Superseded | Certificate has been superseded by a new certificate |
-| 5 | Cessation of Operation | Certificate is no longer needed |
-| 6 | Certificate Hold | Temporary suspension (use with caution) |
-| 9 | Privilege Withdrawn | Privileges have been withdrawn |
-| 10 | AA Compromise | Attribute Authority has been compromised |
 
 **Note**: Not all Idnomic PKI configurations support all revocation reasons. Consult your Idnomic administrator for supported reasons in your environment.
 
@@ -147,25 +143,6 @@ Each certificate template discovered from Idnomic requires configuration when us
 - The Zone parameter must exactly match a zone configured in your Idnomic PKI system
 - Zone names are case-sensitive
 - Each template can be configured with a different zone if needed
-
-### Configuration Example
-
-**CA Configuration in AnyCA Gateway**:
-```json
-{
-  "EndpointAddress": "https://idnomic-pki.example.com:8443/RA/connector.cgi",
-  "ClientCertLocation": "C:\\Program Files\\Keyfactor\\AnyGateway\\Certificates\\gateway-client.pfx",
-  "ClientCertPassword": "MySecurePassword123!",
-  "Enabled": true
-}
-```
-
-**Template Configuration** (for each profile):
-```json
-{
-  "Zone": "Production"
-}
-```
 
 ### Gateway Registration Notes
 
@@ -400,35 +377,7 @@ Each certificate template discovered from Idnomic requires configuration when us
 
 ---
 
-### Test Case 8: Certificate Revocation - Multiple Reason Codes
-
-**Objective**: Verify that all supported revocation reason codes work correctly.
-
-**Prerequisites**:
-- Multiple test certificates are available for revocation
-- CA supports all standard revocation reasons
-
-**Test Steps**:
-1. For each supported reason code (0, 1, 2, 3, 4, 5, 6, 9, 10):
-   - Select a test certificate
-   - Submit revocation with the specific reason code
-   - Verify revocation succeeds
-2. Check CRL for correct reason codes
-
-**Expected Results**:
-- All revocation requests succeed
-- Each certificate shows correct revocation reason in CRL
-- No errors occur for any reason code
-
-**Verification**:
-- Download and parse CRL from Idnomic PKI
-- Verify each revoked certificate has correct CRL reason code
-- Confirm all revocations are logged in both systems
-- Check that certificates with reason code 6 (Certificate Hold) can be resumed if supported
-
----
-
-### Test Case 9: Profile Properties Validation
+### Test Case 8: Profile Properties Validation
 
 **Objective**: Verify that profile-specific properties are correctly enforced during enrollment.
 
@@ -454,7 +403,7 @@ Each certificate template discovered from Idnomic requires configuration when us
 
 ---
 
-### Test Case 10: Client Certificate Expiration Handling
+### Test Case 9: Client Certificate Expiration Handling
 
 **Objective**: Verify proper error handling when the Gateway client certificate expires or becomes invalid.
 
@@ -482,89 +431,6 @@ Each certificate template discovered from Idnomic requires configuration when us
 
 ---
 
-### Test Case 11: Network Connectivity Failure
-
-**Objective**: Verify graceful handling of network connectivity issues to the Idnomic RA connector.
-
-**Prerequisites**:
-- Ability to simulate network failure (firewall rule, network disconnection, etc.)
-
-**Test Steps**:
-1. Simulate network connectivity loss to RA connector
-2. Attempt enrollment operation
-3. Observe error handling
-4. Restore network connectivity
-5. Retry operation
-
-**Expected Results**:
-- Operation fails with clear network connectivity error
-- System does not crash or become unstable
-- After connectivity restoration, operations succeed
-- Appropriate timeout handling occurs
-
-**Verification**:
-- Review error messages for clarity
-- Check Gateway logs show connection attempt details
-- Verify timeout values are appropriate
-- Confirm no memory leaks or resource issues during failure
-
----
-
-### Test Case 12: Concurrent Enrollment Requests
-
-**Objective**: Verify the Gateway can handle multiple simultaneous enrollment requests.
-
-**Prerequisites**:
-- CA is properly configured
-- Multiple test CSRs are available
-- Load testing capability exists
-
-**Test Steps**:
-1. Submit 10 enrollment requests simultaneously
-2. Monitor all requests to completion
-3. Verify all enrollments succeed or fail appropriately
-
-**Expected Results**:
-- All requests are processed
-- No race conditions occur
-- Certificates are correctly issued for valid requests
-- System remains stable under load
-
-**Verification**:
-- Check all requests complete within reasonable time
-- Verify no certificate duplication occurs
-- Review Gateway logs for proper request handling
-- Confirm Idnomic PKI properly queued and processed requests
-- Validate certificate data integrity for all issued certificates
-
----
-
-### Test Case 13: Large Certificate Synchronization
-
-**Objective**: Verify Gateway performance when synchronizing large numbers of certificates.
-
-**Prerequisites**:
-- Idnomic PKI has 1000+ certificates
-- Adequate system resources available
-
-**Test Steps**:
-1. Trigger full synchronization of large certificate set
-2. Monitor memory usage and performance
-3. Verify synchronization completes successfully
-
-**Expected Results**:
-- Synchronization completes without timeout
-- Memory usage remains within acceptable limits
-- All certificates are synchronized accurately
-- System remains responsive during sync
-
-**Verification**:
-- Monitor Gateway memory and CPU usage during sync
-- Verify certificate count matches Idnomic PKI
-- Check for any timeout or performance warnings in logs
-- Validate random sample of synchronized certificates for accuracy
-
----
 
 ## Certificate Template Creation Step
 

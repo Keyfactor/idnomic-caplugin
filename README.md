@@ -485,34 +485,6 @@ The plugin supports the following standard CRL revocation reasons:
 
 ---
 
-### Test Case 9: Client Certificate Expiration Handling
-
-**Objective**: Verify proper error handling when the Gateway client certificate expires or becomes invalid.
-
-**Prerequisites**:
-- Ability to test with expired or invalid client certificate
-- Valid backup client certificate available
-
-**Test Steps**:
-1. Configure Gateway with expired client certificate
-2. Attempt any operation (Ping, Enrollment, Sync)
-3. Observe error handling
-4. Replace with valid certificate and retry
-
-**Expected Results**:
-- Operations fail with clear error indicating certificate issue
-- Error message specifies certificate expiration or invalidity
-- After replacing certificate, operations succeed
-- No system instability occurs
-
-**Verification**:
-- Check error messages are user-friendly and actionable
-- Verify Gateway logs contain detailed certificate validation errors
-- Confirm system recovers gracefully after certificate replacement
-- Review Idnomic PKI logs for authentication failure records
-
----
-
 
 ## License
 

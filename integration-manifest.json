@@ -1,0 +1,42 @@
+{
+    "$schema": "https://keyfactor.github.io/v2/integration-manifest-schema.json",
+    "integration_type": "anyca-plugin",
+    "name": "Idnomic PKI AnyCA Gateway Plugin",
+    "status": "pilot",
+    "support_level": "kf-supported",
+    "link_github": true,
+    "update_catalog": true,
+    "description": "Idnomic PKI (formerly OpenTrust PKI) plugin for the AnyCA Gateway framework. Provides certificate lifecycle management through SOAP-based integration with Idnomic PKI systems.",
+    "gateway_framework": "24.2.0",
+    "release_dir": "Idnomic/bin/Release",
+    "release_project": "Idnomic/Idnomic.csproj",
+    "about": {
+        "carest": {
+            "ca_plugin_config": [
+                {
+                    "name": "EndpointAddress",
+                    "description": "Full URL to the Idnomic RA connector SOAP endpoint. Example: https://idnomic-pki.example.com:8443/RA/connector.cgi"
+                },
+                {
+                    "name": "ClientCertLocation",
+                    "description": "Full file path to the client certificate PFX file on the Gateway server. Example: C:\\Certificates\\gateway-client.pfx"
+                },
+                {
+                    "name": "ClientCertPassword",
+                    "description": "Password for the client certificate PFX file. This certificate is used for mutual TLS authentication to the Idnomic PKI system."
+                },
+                {
+                    "name": "Enabled",
+                    "description": "Flag to enable or disable gateway functionality. Disabling is primarily used to allow creation of the CA prior to configuration information being available. Default: true"
+                }
+            ],
+            "enrollment_config": [
+                {
+                    "name": "Zone",
+                    "description": "REQUIRED: The Idnomic PKI zone where certificates will be issued. Must exactly match a zone configured in the Idnomic PKI system (case-sensitive). Example: Production"
+                }
+            ],
+            "product_ids": []
+        }
+    }
+}

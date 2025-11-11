@@ -238,7 +238,7 @@ The plugin supports the following standard CRL revocation reasons:
         * **ClientCertPassword** - The password for the client certificate. 
         * **Enabled** - Flag to Enable or Disable gateway functionality. Disabling is primarily used to allow creation of the CA prior to configuration information being available. 
 
-2. TODO Certificate Template Creation Step is a required section
+2. Create Templates that Match Corresponding products in Idnomic
 
 3. Follow the [official Keyfactor documentation](https://software.keyfactor.com/Guides/AnyCAGatewayREST/Content/AnyCAGatewayREST/AddCA-Keyfactor.htm) to add each defined Certificate Authority to Keyfactor Command and import the newly defined Certificate Templates.
 

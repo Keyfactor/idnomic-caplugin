@@ -14,3 +14,16 @@ The Idnomic PKI Gateway plugin extends the capabilities of Idnomic PKI (formerly
 * **Certificate Revocation**:
     * Request revocation of previously issued certificates
     * Support for standard CRL revocation reasons
+
+## Requirements
+
+TODO Requirements is a required section
+
+## Gateway Registration
+
+TODO Gateway Registration is a required section
+
+## Certificate Template Creation Step
+
+TODO Certificate Template Creation Step is a required section
+

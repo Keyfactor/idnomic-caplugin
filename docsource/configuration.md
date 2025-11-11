@@ -403,4 +403,7 @@ Each certificate template discovered from Idnomic requires configuration when us
 
 ---
 
+## Certificate Template Creation Step
+
+TODO Certificate Template Creation Step is a required section
 

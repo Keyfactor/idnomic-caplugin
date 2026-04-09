@@ -28,6 +28,10 @@
                 {
                     "name": "Enabled",
                     "description": "Flag to Enable or Disable gateway functionality. Disabling is primarily used to allow creation of the CA prior to configuration information being available."
+                },
+                {
+                    "name": "IssuerDnFilter",
+                    "description": "Optional filter to restrict certificate synchronization to a specific issuing CA. Only certificates whose Issuer DN contains this value (case-insensitive) will be synchronized. For example, 'CN=MySubCA' will match any certificate issued by a CA whose DN contains that string. Can also be specified as a suffix on the endpoint URL using ||issuerdnfilter=<value> syntax."
                 }
             ],
             "enrollment_config": [

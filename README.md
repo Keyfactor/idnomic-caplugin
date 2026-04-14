@@ -40,6 +40,7 @@ The Idnomic PKI Gateway plugin extends the capabilities of Idnomic PKI (formerly
     * Download all certificates issued by the Idnomic CA
     * Support for incremental and full synchronization
     * Filter certificates by issuance date
+    * Filter certificates by Issuer DN for multi-CA environments
 * **Certificate Enrollment**:
     * Support certificate enrollment with new key pairs
     * Dynamic template (profile) discovery from the CA
@@ -197,6 +198,7 @@ The plugin supports the following standard CRL revocation reasons:
         | **ClientCertLocation** | Full file path to the client certificate PFX file on the Gateway server | Yes | `C:\Certificates\gateway-client.pfx` |
         | **ClientCertPassword** | Password for the client certificate PFX file | Yes | `SecureP@ssw0rd` |
         | **Enabled** | Whether the CA connection is enabled | No (default: true) | `true` or `false` |
+        | **IssuerDnFilter** | Optional filter to restrict certificate synchronization to a specific issuing CA. Only certificates whose Issuer DN contains this value (case-insensitive substring match) will be synchronized. Can also be specified as a suffix on the endpoint URL using `\|\|issuerdnfilter=<value>` syntax. | No | `CN=Server CA` |
 
         ### Template (Product) Configuration
 
@@ -216,6 +218,7 @@ The plugin supports the following standard CRL revocation reasons:
 
         - Each defined Certificate Authority in the AnyCA Gateway REST can support one Idnomic CA endpoint
         - If you have multiple Idnomic PKI instances or need to issue from different zones with different permissions, you must define multiple Certificate Authorities in the AnyCA Gateway
+        - When multiple issuing CAs are hosted on a single Idnomic instance, define a separate Logical CA for each and use the **IssuerDnFilter** parameter to scope certificate synchronization to the correct issuing CA. Each Logical CA should point to the same EndpointAddress but with a different IssuerDnFilter value containing a unique substring of the respective CA's Issuer DN (e.g., `CN=Server CA` vs `CN=User CA`)
         - Each CA configuration will manifest in Command as a separate CA entry
         - The plugin uses SOAP-based communication exclusively; ensure the RA connector endpoint is properly configured for SOAP access
         - Client certificate authentication is mandatory and cannot be disabled
@@ -267,6 +270,9 @@ The plugin supports the following standard CRL revocation reasons:
 - Confirm the client certificate has permissions to call `search_for_certificates`
 - Verify network connectivity and timeout settings
 - For large certificate databases, consider adjusting synchronization schedules
+- If certificates from the wrong issuing CA appear under a Logical CA, verify the **IssuerDnFilter** value is a unique substring that only matches the intended CA's Issuer DN
+- If no certificates sync when a filter is configured, enable Trace logging and check the `filtered out by IssuerDnFilter` messages to verify the filter value matches the certificate Issuer DN
+- The IssuerDnFilter set via the dedicated configuration field takes precedence over the `||issuerdnfilter=` endpoint URL suffix
 
 ## Test Cases
 
@@ -483,6 +489,38 @@ The plugin supports the following standard CRL revocation reasons:
 - Verify Idnomic PKI rejects non-compliant requests
 - Check that valid certificates meet profile specifications
 - Confirm Gateway properly communicates validation errors
+
+---
+
+### Test Case 9: Issuer DN Filter - Multi-CA Sync Scoping
+
+**Objective**: Verify that the IssuerDnFilter parameter correctly restricts certificate synchronization to a specific issuing CA when multiple CAs are hosted on the same Idnomic instance.
+
+**Prerequisites**:
+- Idnomic instance has at least two issuing CAs (e.g., `CN=Server CA, O=Keyfactor, C=FR` and `CN=User CA, O=Keyfactor, C=FR`)
+- Certificates have been issued under each CA
+- Two Logical CAs are configured in the AnyCA Gateway, both pointing to the same EndpointAddress but with different IssuerDnFilter values
+
+**Test Steps**:
+1. Configure Logical CA "IDnomic-ServerCA" with `IssuerDnFilter=CN=Server CA`
+2. Configure Logical CA "IDnomic-UserCA" with `IssuerDnFilter=CN=User CA`
+3. Trigger a full synchronization on "IDnomic-ServerCA"
+4. Trigger a full synchronization on "IDnomic-UserCA"
+5. Verify certificate inventory in Keyfactor Command for each Logical CA
+
+**Expected Results**:
+- "IDnomic-ServerCA" contains only certificates issued by `CN=Server CA`
+- "IDnomic-UserCA" contains only certificates issued by `CN=User CA`
+- No certificates appear under the wrong Logical CA
+- Synchronization completes without errors
+
+**Verification**:
+- Review Gateway logs for `Issuer DN filter resolved to:` messages confirming filter activation
+- At Trace level, confirm per-certificate `passed IssuerDnFilter` and `filtered out by IssuerDnFilter` log entries
+- Spot-check certificates in Command to verify Issuer DN matches the configured filter
+- Test with IssuerDnFilter left blank to confirm all certificates sync (legacy behavior)
+- Test case-insensitivity by using a differently-cased filter value (e.g., `cn=server ca`)
+- Test the `||issuerdnfilter=` endpoint URL suffix syntax as an alternative to the dedicated field
 
 ---
 

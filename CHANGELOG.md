@@ -1,2 +1,17 @@
+- 2.0.0
+    - Added Issuer DN Filter (IssuerDnFilter) configuration parameter to restrict certificate synchronization per Logical CA
+    - Filter supports case-insensitive substring matching against the certificate's Issuer Distinguished Name
+    - Filter can also be specified via endpoint URL suffix using ||issuerdnfilter=<value> syntax for backward compatibility
+    - Filter applies to both bulk sync (DownloadAllIssuedCertificates) and single certificate downloads (DownloadCertificate)
+    - Added FlowLogger diagnostic helper — renders timed, step-by-step ASCII flow diagrams at Trace level for every public operation
+    - Added comprehensive structured logging throughout all plugin and client methods (MethodEntry/MethodExit, LogTrace, LogDebug, LogWarning, LogError)
+    - Hardened error handling: input validation, null guards, per-item try/catch in sync loop, AggregateException unwrapping, FaultException differentiation
+    - Sync loop now tracks and reports filtered, skipped, and error counts alongside successful certificate count
+    - Constructor-level validation for required parameters (endpoint, client cert location, password)
+    - EnsureClientIsEnabled now throws InvalidOperationException instead of bare Exception
+    - Added .NET 10 target framework support (net6.0, net8.0, net10.0)
+    - Uses X509CertificateLoader on .NET 10+ to resolve SYSLIB0057 obsolescence (falls back to X509Certificate2 constructors on older TFMs)
+    - Skips ServicePointManager TLS configuration on .NET 10+ where TLS 1.2+ is the default (resolves SYSLIB0014)
+
 - 1.0.0
     - Initial Version

@@ -27,6 +27,7 @@ public class IdnomicPluginConfig
         public const string ClientCertLocation = "ClientCertLocation";
         public const string ClientCertPassword = "ClientCertPassword";
         public const string Enabled = "Enabled";
+        public const string IssuerDnFilter = "IssuerDnFilter";
     }
 
     public class Config
@@ -35,6 +36,7 @@ public class IdnomicPluginConfig
         public string ClientCertLocation { get; set; }
         public string ClientCertPassword { get; set; }
         public bool Enabled { get; set; }
+        public string IssuerDnFilter { get; set; }
     }
 
     public static class EnrollmentParametersConstants
@@ -73,6 +75,13 @@ public class IdnomicPluginConfig
                 Hidden = false,
                 DefaultValue = true,
                 Type = "Boolean"
+            },
+            [ConfigConstants.IssuerDnFilter] = new PropertyConfigInfo()
+            {
+                Comments = "Optional filter to restrict certificate synchronization to a specific issuing CA. Only certificates whose Issuer DN contains this value (case-insensitive) will be synchronized. For example, 'CN=MySubCA' will match any certificate issued by a CA whose DN contains that string. Can also be specified as a suffix on the endpoint URL using ||issuerdnfilter=<value> syntax.",
+                Hidden = false,
+                DefaultValue = "",
+                Type = "String"
             },
         };
     }

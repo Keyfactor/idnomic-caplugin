@@ -683,7 +683,10 @@ public class IdnomicClient : IIdnomicClient
 
             var cert = LoadCertificateFromPem(Encoding.ASCII.GetBytes(pem));
             issuer = cert.Issuer;
-            serialNumber = cert.SerialNumber;
+            // Idnomic revoke API expects the canonical serial form (no leading zeros, lowercase hex).
+            // Without this normalization, short (e.g. 1-byte) serials such as "05" are rejected.
+            var canonicalSerial = cert.SerialNumber.TrimStart('0').ToLowerInvariant();
+            serialNumber = canonicalSerial.Length == 0 ? "0" : canonicalSerial;
             reason = _requestManager.GetRevokeReasonText(revocationReason);
 
             _logger.LogTrace("RevokeCertificate: Parsed cert. Issuer='{Issuer}', SerialNumber='{Serial}', Reason='{Reason}'",
